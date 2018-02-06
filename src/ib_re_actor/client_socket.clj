@@ -10,8 +10,11 @@
 
   https://www.interactivebrokers.com/en/software/api/api.htm
   "
-  (:require [ib-re-actor.mapping :refer [map->]]
-            [ib-re-actor.translation :refer [translate]]))
+  (:require
+   [ib-re-actor.mapping :refer [map->]]
+   [ib-re-actor.translation :refer [translate]])
+  (:import
+   (com.ib.client EClientSocket)))
 
 ;;;
 ;;; Connection and Server

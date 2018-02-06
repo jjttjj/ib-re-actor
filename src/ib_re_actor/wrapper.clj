@@ -1,10 +1,9 @@
 (ns ib-re-actor.wrapper
-  (:require [clojure.tools.logging :as log]
-            [ib-re-actor.mapping :refer [->map]]
-            [clojure.xml :as xml]
-            [ib-re-actor.translation
-             :refer [translate integer-account-value? numeric-account-value?
-                     boolean-account-value?]]))
+  (:require
+   [clojure.tools.logging :as log]
+   [clojure.xml :as xml]
+   [ib-re-actor.mapping :refer [->map]]
+   [ib-re-actor.translation :refer [boolean-account-value? integer-account-value? numeric-account-value? translate]]))
 
 
 (defn- get-stack-trace [ex]
@@ -77,8 +76,7 @@
    (error-end? nil msg))
   ([req-id {:keys [type code id] :as msg}]
    (and (error? msg)
-        (or (connection-error-code? code)
-            (= req-id id)))))
+        (= req-id id))))
 
 
 (def end-message-type {:tick :tick-snapshot-end
@@ -381,7 +379,7 @@
 
     ;;; Fundamental Data
     (fundamentalData [this requestId xml]
-      (let [report-xml (xml/parse (java.io.ByteArrayInputStream (.getBytes xml)))]
+      (let [report-xml (xml/parse (java.io.ByteArrayInputStream. (.getBytes xml)))]
         (dispatch-message cb {:type :fundamental-data :request-id requestId
                               :value report-xml})))
 

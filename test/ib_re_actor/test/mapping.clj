@@ -1,12 +1,10 @@
 (ns ib-re-actor.test.mapping
-  (:require [midje.sweet :refer [fact]]
-            [clj-time.core :refer [date-time year-month]]
-            [ib-re-actor.mapping :refer [->map map->]])
-  (:import [com.ib.client
-            Contract ContractDetails
-            Order OrderState
-            Execution ExecutionFilter
-            CommissionReport]))
+  (:require
+   [clj-time.core :refer [date-time year-month]]
+   [ib-re-actor.mapping :refer [->map map->]]
+   [midje.sweet :refer [fact]])
+  (:import
+   (com.ib.client Contract ContractDetails Order OrderState Execution ExecutionFilter CommissionReport)))
 
 (defn invoke-private-ctor [type]
   (let [ctor (first (.getDeclaredConstructors type))]
@@ -150,10 +148,11 @@ You can have duplicate rows for the same field<->map key to try out different va
   [:side m_side :buy "BUY"])
 
 (defmappingtest Order
+  [:account-code m_account "some account code"]
   [:order-id m_orderId 1]
   [:client-id m_clientId 2]
   [:permanent-id m_permId 3]
-  [:transmit? m_transmit true]
+  [:transmit? m_transmit false]
   [:quantity m_totalQuantity 4]
   [:action m_action :buy "BUY"]
   [:type m_orderType :limit "LMT"]

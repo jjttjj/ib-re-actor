@@ -6,8 +6,11 @@ with the Interactive Brokers API.
 In addition to just converting to maps, we also use these functions to translate some
 primitives: strings with constant values into keywords, booleans in strings into booleans,
 date strings into clj-time dates, etc."
-  (:require [clojure.string :refer [join]]
-            [ib-re-actor.translation :refer [translate]]))
+  (:require
+   [clojure.string :refer [join]]
+   [ib-re-actor.translation :refer [translate]])
+  (:import
+   (com.ib.client Contract)))
 
 (defprotocol Mappable
   (->map [this]
@@ -50,23 +53,24 @@ field on the object."
   [m this [key field & options]]
   (let [{:keys [translation nested]} (apply hash-map options)
         val (gensym "val")]
-    `((if-let [~val (~key ~m)]
-        (try
-          (set! (. ~this ~field)
-                ~(cond
-                  (not (nil? translation)) `(translate :to-ib ~translation ~val)
-                  (not (nil? nested)) `(map-> ~nested ~val)
-                  :else `~val))
-          (catch ClassCastException ex#
-            (throw (ex-info (str "Failed to map field " ~(str field)
-                                 ~(when translation
-                                    (str ", using translation " translation))
-                                 ", value \"" ~val "\"")
-                            {:class (class ~this)
-                             :key ~key
-                             :field ~(str field)
-                             :translation ~translation}
-                            ex#))))))))
+    `((if (contains? ~m ~key)
+          (let [~val (~key ~m)]
+            (try
+              (set! (. ~this ~field)
+                    ~(cond
+                       (not (nil? translation)) `(translate :to-ib ~translation ~val)
+                       (not (nil? nested)) `(map-> ~nested ~val)
+                       :else `~val))
+              (catch ClassCastException ex#
+                (throw (ex-info (str "Failed to map field " ~(str field)
+                                     ~(when translation
+                                        (str ", using translation " translation))
+                                     ", value \"" ~val "\"")
+                                {:class (class ~this)
+                                 :key ~key
+                                 :field ~(str field)
+                                 :translation ~translation}
+                                ex#)))))))))
 
 (defmacro defmapping
   "This is used to extend an Interactive Brokers API class with a method to convert it into
@@ -176,6 +180,7 @@ create instances, we will only map from objects to clojure maps."
   [:time m_time])
 
 (defmapping com.ib.client.Order
+  [:account-code m_account]
   [:order-id m_orderId]
   [:client-id m_clientId]
   [:permanent-id m_permId]
@@ -190,7 +195,7 @@ create instances, we will only map from objects to clojure maps."
   [:good-till-date m_goodTillDate]
   [:outside-regular-trading-hours? m_outsideRth]
   [:hidden? m_hidden]
-  [:all-or-none? m_allOrNone ]
+  [:all-or-none? m_allOrNone]
   [:limit-price m_lmtPrice]
   [:discretionary-amount m_discretionaryAmt]
   [:stop-price m_auxPrice])
