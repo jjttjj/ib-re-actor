@@ -114,7 +114,10 @@ to check if if a given value is valid (known)."
                     :index "IND"
                     :future-option "FOP"
                     :cash "CASH"
-                    :bag "BAG"})
+                    :bag "BAG"
+                    :warrant "WAR"
+                    :dutch-warrant "IOPT"
+                    :cfd "CFD"})
 
 (defmethod translate [:to-ib :bar-size-unit] [_ _ unit]
   (case unit
